@@ -16,7 +16,7 @@ The interactive map is designed to work **offline**, without the need for a serv
 
 In addition to the dataset, `.js` files should define additional variables for map configuration and styling. These files can be generated using **`src/csv_to_js.py`** (see "Dataset to JavaScript" section for details).  
 
-Once the `.js` files are generated and placed in the `data/` folder, the **`config.js`** file must be updated accordingly.
+Once the `.js` files are generated and placed in the `data/` folder, the **`config.js`** file must be updated accordingly (see "Configuration File" section for details).
 
 
 
@@ -49,7 +49,7 @@ The `css/` folder contains the following stylesheets:
 The `src/js/` folder contains multiple files:
 
 ### Libraries (offline usage)
-- **`bootstrap.bundle.min.js`** – Bootstrap library for modals.
+- **`bootstrap.bundle.min.js`** – [Bootstrap](https://getbootstrap.com/) library for modals.
 - **`jquery-3.7.1.min.js`** – [jQuery](https://jquery.com/) is an open-source JavaScript library that simplifies writing JavaScript code.
 - **`select2.min.js`** – [Select2](https://select2.org/) is a JavaScript library and jQuery plugin that replaces standard HTML `<select>` elements with a more user-friendly and functional interface, including features such as search.
 - **`keplergl.min.js`, `redux.js`, `styled-components.min.js`, `react*.min.js`** – Libraries for KeplerGl.
@@ -78,7 +78,7 @@ This file contains **five mandatory constants**:
 
 ## Dataset to JavaScript (`csv_to_js.py`)
 
-This script converts CSV datasets into `.js` files. It supports **command-line arguments** via `argparse`, or can be imported as a Python module to directly call the `create_js` function  (**`src/example.sh`** provides a console execution example). The **`data/example-data/`** folder contains two example CSV datasets: a small H3 bounding box of Rwanda with traffic and speed data generated randomly.
+This script converts CSV datasets into `.js` files. It supports **command-line arguments** via `argparse`, or can be imported as a Python module to directly call the `create_js` function  (**`src/example.sh`** provides a console execution example). The **`data/example-data/`** folder contains two example CSV datasets with randomly generated traffic and speed data. These files can be used to test the code and serve as a reference for how the CSV should be structured.
 
 Inputs are defined in the parser help and summarized below:
 
@@ -88,8 +88,8 @@ Inputs are defined in the parser help and summarized below:
 | **OUTPUT** | Path to the output `.js` file |
 | **LABEL** | Title displayed in the tooltip |
 | **DATA_ID** | Unique identifier for the dataset (must be unique across datasets) |
-| **VARIABLE** | Column to visualize with hexagons. Used in Python to drop nulls and to define the legend title |
-| **HEIGHT** | Column representing height for 3D map visualization |
+| **VARIABLE** | Variable used for hexagon color visualization. In Python, it is also used to drop null values and to define the legend title |
+| **HEIGHT** | Variable representing height for 3D map visualization |
 | **LATITUDE** | Initial latitude of the map center |
 | **LONGITUDE** | Initial longitude of the map center |
 | **ZOOM** | Initial zoom level |
@@ -109,8 +109,8 @@ Inputs are defined in the parser help and summarized below:
 
 ### Notes
 
-- **Latitude, Longitude, Zoom** only apply when the map loads for the first time (default dataset or URL-defined dataset). Changing datasets after initial load keeps the current view.  
 - **URL dataset parameter**: Add `?s={DATASET_ID}` to the URL to pre-select a dataset. Example: `../interactive_map.html?s=speed`
+- **Latitude, Longitude, Zoom** only apply when the map loads for the first time. Changing datasets after initial load keeps the current view — unless you refresh the page or load a new dataset through the URL (which also refreshes the page).
 - **Variable and legend**: In the legend, the displayed variable name corresponds to the `field_label` defined in `FIELDS`.
 - **Scale column**: Instead of using a continuous scale, values are grouped into discrete intervals. Each interval is identified by a number. The `scale` column indicates the interval number to which a variable value belongs. This `scale` value is then mapped to a specific color using `COLOR_MAP`.
 
