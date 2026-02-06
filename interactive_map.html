@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Interactive Map</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230071BC'/><text x='50%' y='52%' text-anchor='middle' font-size='65' font-weight='bold' fill='%23FFFFFF' font-family='Arial' dy='.3em'>M</text></svg>">
+    <link href="./css/maplibre-gl.css" rel="stylesheet">
+    <link href="./css/interactive_map.css" rel="stylesheet">
+    <link href="./css/bootstrap.css" rel="stylesheet">
+    <link href="./css/select2.min.css" rel="stylesheet">
+    <script src="./config.js"></script>
+    <script src="./src/js/config-validation.js"></script>
+    <script src="./src/js/react.production.min.js"></script>
+    <script src="./src/js/react-dom.production.min.js"></script>
+    <script src="./src/js/redux.js"></script>
+    <script src="./src/js/react-redux.min.js"></script>
+    <script src="./src/js/styled-components.min.js"></script>
+    <script src="./src/js/keplergl.min.js"></script>
+    <script src="./src/js/bootstrap.bundle.min.js"></script>
+    <script src="./src/js/jquery-3.7.1.min.js"></script>
+    <script src="./src/js/select2.min.js"></script>
+
+    <style type="text/css">
+      body {margin: 0; padding: 0; overflow: hidden;}
+    </style>
+
+    <script>
+      /** A MapBox Token is not required, but the variable must be defined **/
+      const MAPBOX_TOKEN = 'TOKEN';
+      const WARNING_MESSAGE = 'Please Provide a Mapbox Token in order to use Kepler.gl.';
+    </script>
+  </head>
+  <body>
+    <div class="wb-map-control">
+      <button class="wb-map-control-button wb-info" onclick="openInfoModal()">
+        <span class="wb-tooltip wb-info">Info</span>
+        <svg viewBox="0 0 24 24" width="22px" height="22px" style="fill: currentColor;">
+          <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" /></svg>
+        </svg>
+      </button>
+      <button class="wb-map-control-button wb-select-dataset" onclick="openModal()">
+        <span class="wb-tooltip wb-select-dataset">Dataset</span>
+        <svg viewBox="0 0 24 24" width="22px" height="22px" style="fill: currentColor;">
+          <path d="M12 3C7.58 3 4 4.79 4 7V17C4 19.21 7.59 21 12 21S20 19.21 20 17V7C20 4.79 16.42 3 12 3M18 17C18 17.5 15.87 19 12 19S6 17.5 6 17V14.77C7.61 15.55 9.72 16 12 16S16.39 15.55 18 14.77V17M18 12.45C16.7 13.4 14.42 14 12 14C9.58 14 7.3 13.4 6 12.45V9.64C7.47 10.47 9.61 11 12 11C14.39 11 16.53 10.47 18 9.64V12.45M12 9C8.13 9 6 7.5 6 7S8.13 5 12 5C15.87 5 18 6.5 18 7S15.87 9 12 9Z" /></svg>
+        </svg>
+      </button>
+      <button class="wb-map-control-button wb-toggle3d" onclick="toggle3d()">
+        <span class="wb-tooltip wb-toggle3d">3D Map</span>
+        <svg viewBox="0 0 64 64" width="22px" height="22px" style="fill: currentColor;">
+            <path d="M29.2,29.57,9.52,40.93V20a2.81,2.81,0,0,1,1.4-2.43L29.2,7.06Z"></path>
+            <path d="M32.08,34.38l21,10.82L33.4,56.56a2.78,2.78,0,0,1-2.8,0L12.12,45.91Z"></path>
+            <path d="M54.48,20v19.6L34.8,29.49V7.06L53.09,17.61A2.81,2.81,0,0,1,54.48,20Z"></path>
+        </svg>
+      </button>
+      <button class="wb-map-control-button wb-opacity" onclick="toggleOpacity()">
+        <span class="wb-tooltip wb-opacity">Opacity</span>
+        <svg viewBox="0 0 24 24" width="22px" height="22px" style="fill: currentColor;">
+          <path d="M17.66,8L12,2.35L6.34,8C4.78,9.56 4,11.64 4,13.64C4,15.64 4.78,17.75 6.34,19.31C7.9,20.87 9.95,21.66 12,21.66C14.05,21.66 16.1,20.87 17.66,19.31C19.22,17.75 20,15.64 20,13.64C20,11.64 19.22,9.56 17.66,8M6,14C6,12 6.62,10.73 7.76,9.6L12,5.27L16.24,9.65C17.38,10.77 18,12 18,14H6Z" /></svg>
+        </svg>
+      </button>
+      <button class="wb-map-control-button wb-legend" onclick="toggleLegend()">
+        <span class="wb-tooltip wb-legend">Legend</span>
+        <svg viewBox="0 0 24 24" width="22px" height="22px" style="fill: currentColor;">
+          <path d="M9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21L3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19.03 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3L20.34,3.03L15,5.1L9,3M8,5.45V17.15L5,18.31V6.46L8,5.45M10,5.47L14,6.87V18.53L10,17.13V5.47M19,5.7V17.54L16,18.55V6.86L19,5.7M7.46,6.3L5.57,6.97V9.12L7.46,8.45V6.3M7.46,9.05L5.57,9.72V11.87L7.46,11.2V9.05M7.46,11.8L5.57,12.47V14.62L7.46,13.95V11.8M7.46,14.55L5.57,15.22V17.37L7.46,16.7V14.55Z" /></svg>
+        </svg>
+      </button>
+      <button class="wb-map-control-button wb-orientation" onclick="resetOrientation()">
+        <span class="wb-tooltip wb-orientation">Reset Orientation</span>
+        <svg viewBox="0 0 24 24" width="22px" height="22px" style="fill: currentColor;">
+          <path d="M15 9L12 0L9 9L0 12L9 15L12 24L15 15L24 12L15 9M4 12L10 10L11 12H4M12 20L10 14L12 13V20M12 4L14 10L12 11V4M14 14L13 12H20L14 14M8.7 17.3L5 19L6.7 15.3L8.3 15.8L8.7 17.3M17.3 15.3L19 19L15.3 17.3L15.8 15.7L17.3 15.3M6.7 8.7L5 5L8.7 6.7L8.2 8.2L6.7 8.7M15.3 6.7L19 5L17.3 8.7L15.7 8.2L15.3 6.7Z" /></svg>
+        </svg>
+      </button>
+    </div>
+    <div id="app">
+    </div>
+    <div class="modal fade" id="modal-info" tabindex="-1" aria-labelledby="modal-info-title">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-body">
+            <h5 class="wb-modal-title" id="modal-info-title"></h5>
+            <div class="wb-modal-close" data-bs-dismiss="modal">
+              <svg viewBox="0 0 64 64" width="14px" height="14px" style="fill: currentcolor;">
+                <g transform="translate(8, 8)">
+                  <path d="M31.5059707,24 L47.5987718,7.90719891 C48.1337427,7.37222791 48.1337427,6.50972364 47.5987718,5.97475264 L42.0252474,0.40122825 C41.4902764,-0.13374275 40.6277721,-0.13374275 40.0928011,0.40122825 L24,16.4940293 L7.90719891,0.40122825 C7.37222791,-0.13374275 6.50972364,-0.13374275 5.97475264,0.40122825 L0.40122825,5.97475264 C-0.13374275,6.50972364 -0.13374275,7.37222791 0.40122825,7.90719891 L16.4940293,24 L0.40122825,40.0928011 C-0.13374275,40.6277721 -0.13374275,41.4902764 0.40122825,42.0252474 L5.97475264,47.5987718 C6.50972364,48.1337427 7.37222791,48.1337427 7.90719891,47.5987718 L24,31.5059707 L40.0928011,47.5987718 C40.6277721,48.1337427 41.4902764,48.1337427 42.0252474,47.5987718 L47.5987718,42.0252474 C48.1337427,41.4902764 48.1337427,40.6277721 47.5987718,40.0928011 L31.5059707,24 Z"></path>
+                </g>
+              </svg>
+            </div>
+            <hr>
+            <div id="modal-info-body">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="modal-database" tabindex="-1" aria-labelledby="modal-database-label">
+      <div class="modal-dialog modal-md">
+        <div class="modal-content">
+          <div class="modal-body">
+            <h5 class="wb-modal-title" id="modal-database-label">Data source</h5>
+            <div class="wb-modal-close" data-bs-dismiss="modal">
+              <svg viewBox="0 0 64 64" width="14px" height="14px" style="fill: currentcolor;">
+                <g transform="translate(8, 8)">
+                  <path d="M31.5059707,24 L47.5987718,7.90719891 C48.1337427,7.37222791 48.1337427,6.50972364 47.5987718,5.97475264 L42.0252474,0.40122825 C41.4902764,-0.13374275 40.6277721,-0.13374275 40.0928011,0.40122825 L24,16.4940293 L7.90719891,0.40122825 C7.37222791,-0.13374275 6.50972364,-0.13374275 5.97475264,0.40122825 L0.40122825,5.97475264 C-0.13374275,6.50972364 -0.13374275,7.37222791 0.40122825,7.90719891 L16.4940293,24 L0.40122825,40.0928011 C-0.13374275,40.6277721 -0.13374275,41.4902764 0.40122825,42.0252474 L5.97475264,47.5987718 C6.50972364,48.1337427 7.37222791,48.1337427 7.90719891,47.5987718 L24,31.5059707 L40.0928011,47.5987718 C40.6277721,48.1337427 41.4902764,48.1337427 42.0252474,47.5987718 L47.5987718,42.0252474 C48.1337427,41.4902764 48.1337427,40.6277721 47.5987718,40.0928011 L31.5059707,24 Z"></path>
+                </g>
+              </svg>
+            </div>
+            <hr>
+            <form>
+              <div class="mb-4">
+                <div><label for="dataset-select" class="wb-form-label">Select a dataset</label></div>
+                <div>
+                  <select class="wb-form-control gray" id="dataset-select">
+                  </select>
+                </div>
+              </div>
+            </form>
+            <button width="130px" class="wb-select-button" onclick="selectDataset()">Select</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wb-legend-box" style="display: none;">
+      <div class="wb-legend-panel">
+        <div class="wb-legend-header">
+          <span>Legend</span>
+        </div>
+        <div class="wb-legend-content">
+          <div class="wb-legend-title"></div>
+          <div class="wb-legend" id="legend-container">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wb-opacity-box" style="display: none;">
+      <div class="wb-opacity-panel">
+        <div class="wb-opacity-header">
+          <span>Opacity</span>
+        </div>
+        <div class="wb-opacity-content">
+          <table>
+            <tr>
+              <td><input type="radio" name="opacity-option" value="1"></td>
+              <td class="wb-opacity-label">100%</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="opacity-option" value="0.8"></td>
+              <td class="wb-opacity-label">80%</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="opacity-option" value="0.6"></td>
+              <td class="wb-opacity-label">60%</td>
+            </tr> 
+            <tr>
+              <td><input type="radio" name="opacity-option" value="0.4"></td>
+              <td class="wb-opacity-label">40%</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="opacity-option" value="0.2"></td>
+              <td class="wb-opacity-label">20%</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="opacity-option" value="0"></td>
+              <td class="wb-opacity-label">0%</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script>
+      /* Load our React component */
+      /* Validate Mapbox Token */
+      if ((MAPBOX_TOKEN || '') === '' || MAPBOX_TOKEN === 'PROVIDE_MAPBOX_TOKEN') {
+        alert(WARNING_MESSAGE);
+      }
+
+      /** STORE **/
+      const reducers = (function createReducers(redux, keplerGl) {
+        return redux.combineReducers({
+          // mount keplerGl reducer
+          keplerGl: keplerGl.keplerGlReducer.initialState({
+            uiState: {
+              readOnly: true,
+              currentModal: null
+            }
+          })
+        });
+      }(Redux, KeplerGl));
+
+      const middleWares = (function createMiddlewares(keplerGl) {
+        return keplerGl.enhanceReduxMiddleware([
+          // Add other middlewares here
+        ]);
+      }(KeplerGl));
+
+      const enhancers = (function craeteEnhancers(redux, middles) {
+        return redux.applyMiddleware(...middles);
+      }(Redux, middleWares));
+
+      const store = (function createStore(redux, enhancers) {
+        const initialState = {};
+
+        return redux.createStore(
+          reducers,
+          initialState,
+          redux.compose(enhancers)
+        );
+      }(Redux, enhancers));
+      /** END STORE **/
+
+      /** COMPONENTS **/
+      var KeplerElement = (function makeKeplerElement(react, keplerGl, mapboxToken) {
+        return function App() {
+          var rootElm = react.useRef(null);
+          var _useState = react.useState({
+            width: window.innerWidth,
+            height: window.innerHeight
+          });
+          var windowDimension = _useState[0];
+          var setDimension = _useState[1];
+          react.useEffect(function sideEffect(){
+            function handleResize() {
+              setDimension({width: window.innerWidth, height: window.innerHeight});
+            };
+            window.addEventListener('resize', handleResize);
+            return function() {window.removeEventListener('resize', handleResize);};
+          }, []);
+          return react.createElement(
+            'div',
+            {style: {position: 'absolute', left: 0, width: '100vw', height: '100vh'}},
+            react.createElement(keplerGl.KeplerGl, {
+              mapboxApiAccessToken: mapboxToken,
+              id: "map",
+              width: windowDimension.width,
+              height: windowDimension.height
+            })
+          )
+        }
+      }(React, KeplerGl, MAPBOX_TOKEN));
+
+      const app = (function createReactReduxProvider(react, reactRedux, KeplerElement) {
+        return react.createElement(
+          reactRedux.Provider,
+          {store},
+          react.createElement(KeplerElement, null)
+        )
+      }(React, ReactRedux, KeplerElement));
+      /** END COMPONENTS **/
+
+      /** Render **/
+      (function render(react, reactDOM, app) {
+        reactDOM.render(app, document.getElementById('app'));
+      }(React, ReactDOM, app));
+    </script>
+    <script>
+      function getSourcePath(source_id){
+        if (source_id == null) return null;
+
+        const dataset = DATASETS.find(ds => ds.id === source_id);
+        if (!dataset) return null;
+
+        return dataset.path;
+      }
+
+      function getDefaultSourcePath(){
+        const dataset = DATASETS.find(ds => ds.id === DEFAULT_DATASET_ID);
+        
+        return dataset.path;
+      }
+
+      var source_id = DEFAULT_DATASET_ID
+
+      function loadData(callback){
+        const url = new URL(window.location);
+        const params = new URLSearchParams(window.location.search);
+        const source_id = params.get("s") || DEFAULT_DATASET_ID;
+        const source_path = getSourcePath(source_id)
+
+        if (source_path != null){
+          var script = document.createElement('script');
+          script.src = source_path
+          script.type = 'text/javascript';
+          script.onload = function() {
+            callback();
+            url.searchParams.set("s", source_id);
+            history.replaceState(null, "", url.toString());
+          };
+
+          script.onerror = function() {
+            var default_script = document.createElement('script');
+            default_script.src = getDefaultSourcePath();
+            default_script.type = 'text/javascript';
+            default_script.onload = function() { 
+              callback();
+              alert("Error: The requested file could not be found. A default file was loaded.")
+            };
+            default_script.onerror = function() {
+              alert("Error: The requested file could not be found. The default file was not found either. Please check the configuration.");
+            };
+            document.body.appendChild(default_script);
+          };
+
+          document.body.appendChild(script);
+
+        } else {
+
+          var script = document.createElement('script');
+          script.src = getDefaultSourcePath();
+          script.type = 'text/javascript';
+          script.onload = function() {
+            callback();
+            url.searchParams.set("s", DEFAULT_DATASET_ID);
+            history.replaceState(null, "", url.toString());
+            alert("Error: The requested file could not be found. A default file was loaded.")
+          };
+          script.onerror = function() {
+            alert("Error: The default file could not be found. Please check the configuration.")
+          };
+
+          document.body.appendChild(script);
+        }
+      }
+
+      const opacity = DEFAULT_OPACITY;
+      const default_color = [255,203,153];
+      const highlight_color = [252,242,26,255];
+      const map_provider = 'openstreetmap';
+
+      function customize(keplerGl, store) {
+        const loadedData = keplerGl.KeplerGlSchema.load(datasets, config);
+        store.dispatch(keplerGl.addDataToMap({
+          datasets: loadedData.datasets,
+          config: loadedData.config,
+          options: {
+            centerMap: false
+          }
+        }));
+      }
+
+      let datasets = []
+      let config = {}
+
+      function initializeKepler(){
+        datasets = [{
+          "version":"v1",
+          "data":{
+            "id": data_id,
+            "label": label,
+            "color":[143,47,191],
+            "allData": data,
+            "fields": fields
+          }
+        }];
+
+        config = {
+          "version":"v1",
+          "config":{
+            "visState":{
+              "filters":[],
+              "layers":[{
+                "id": data_id+'-layer',
+                "type":"hexagonId",
+                "config":{
+                  "dataId": data_id,
+                  "label": label,
+                  "color":default_color,
+                  "highlightColor":highlight_color,
+                  "columns":{"hex_id":"h3_id"},
+                  "isVisible":true,
+                  "visConfig":{
+                    "colorRange": {
+                      "colors":  colors,
+                      "colorMap":  color_map
+                    },
+                    "filled":true,
+                    "opacity":opacity,
+                    "outline":false,
+                    "strokeColor":null,
+                    "strokeColorRange":{},
+                    "strokeOpacity":0.8,
+                    "thickness":2,
+                    "coverage":1,
+                    "enable3d":false,
+                    "sizeRange":[0,500],
+                    "coverageRange":[0,1],
+                    "elevationScale":5,
+                    "enableElevationZoomFactor":true
+                  },
+                  "hidden":false,
+                  "textLabel":[{
+                    "field":null,
+                    "color":[255,255,255],
+                    "size":18,
+                    "offset":[0,0],
+                    "anchor":"middle",
+                    "alignment":"center",
+                    "outlineWidth":0,
+                    "outlineColor":[255,0,0,255],
+                    "background":false,
+                    "backgroundColor":[0,0,200,255]
+                  }]
+                },
+                "visualChannels":{
+                  "colorField":{"name":"scale","type":"integer"},
+                  "colorScale":"custom",
+                  "strokeColorField":null,
+                  "strokeColorScale":"ordinal",
+                  "sizeField":null,
+                  "sizeScale":"linear",
+                  "coverageField":null,
+                  "coverageScale":"linear"
+                }
+              }],
+              "effects":[],
+              "interactionConfig":{
+                "tooltip":{
+                  "fieldsToShow": tooltip_fields,
+                  "compareMode":false,
+                  "compareType":"absolute",
+                  "enabled": tooltip_enabled
+                },
+                "brush":{"size":0.5,"enabled":false},
+                "geocoder":{"enabled":false},
+                "coordinate":{"enabled":false}
+              },
+              "layerBlending":"normal",
+              "overlayBlending":"normal",
+              "splitMaps":[],
+              "animationConfig":{"currentTime":null,"speed":1},
+              "editor":{"features":[],"visible":true}
+            },
+            "mapState":{
+              "bearing":0,
+              "dragRotate":false,
+              "latitude": latitude,
+              "longitude": longitude,
+              "pitch":0,
+              "zoom": zoom,
+              "isSplit":false,
+              "isViewportSynced":true,
+              "isZoomLocked":false,
+              "splitMapViewports":[]
+            },
+            "mapStyle":{
+              "styleType":map_provider,
+              "topLayerGroups":{},
+              "visibleLayerGroups":{
+                "label":true,
+                "road":true,
+                "border":false,
+                "building":true,
+                "water":false,
+                "land":true,
+                "3d building":false
+              },
+              "threeDBuildingColor":[233.71862868880427,230.92517894351974,226.26942936804556],
+              "backgroundColor":[251,248,243],
+              "mapStyles":{}
+            }
+          }
+        };
+        
+        customize(KeplerGl, store);
+        updateLegend()
+      }
+
+      loadData(initializeKepler);
+
+      $(document).ready(function() {
+        setInfoModal();
+        setSelectOptions(source_id);
+        
+        $('#dataset-select').select2({
+          dropdownParent: $('#modal-database'),
+          dropdownCssClass: 'wb-select2-options',
+          selectionCssClass: 'wb-select2-options',
+          width: '100%',
+        });
+      });
+    </script>
+    <script src="./src/js/legend.js"></script>
+    <script src="./src/js/toggle3d.js"></script>
+    <script src="./src/js/select-database.js"></script>
+    <script src="./src/js/opacity.js"></script>
+    <script src="./src/js/orientation.js"></script>
+    <script>
+      function openInfoModal(){ $('#modal-info').modal('show'); }
+
+      function setInfoModal(){
+        $('#modal-info-title').text(MODAL_INFO_TITLE);
+        $('#modal-info-body').html(MODAL_INFO_BODY);
+      }
+    </script>
+  </body>
+</html>
