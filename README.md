@@ -18,7 +18,7 @@ The tool is currently set up to produce 2D and 3D hexagonal bin maps.
 
 **Question: Wait, doesn't kepler.gl already provide this functionality?**
 
-Not currently. If you only have one dataset to plot, and you're free to upload it to an external service, then you could use the kepler.gl (demo)[https://kepler.gl/demo] to export a single web map as a static html page. In contrast, you can use [static-web-maps](https://github.com/worldbank/static-web-maps) locally on many datasets, and it will create a drop-down within the map portal itself so that your user can switch between as many maps as needed. 
+Not currently. If you only have one dataset to plot, and you're free to upload it to an external service, then you could use the kepler.gl [demo](https://kepler.gl/demo) to export a single web map as a static html page. In contrast, you can use [static-web-maps](https://github.com/worldbank/static-web-maps) locally on many datasets, and it will create a drop-down within the map portal itself so that your user can switch between as many maps as needed. 
 
 ## Usage
 
